@@ -1,19 +1,17 @@
-package client
+package dp_golearn_to_rank
 
 import (
 	"gopkg.in/olivere/elastic.v5"
 	"context"
 	"net/url"
-	"net/http"
-	"fmt"
-	"github.com/pkg/errors"
 )
 
 const (
 	DefaultUrl = "http://127.0.0.1:9200"
 )
 
-// Embedds an elasticsearch client
+// Embedds an elasticsearch client, which by default performs health checks every
+// 60 seconds
 type Client struct {
 	c *elastic.Client
 	ctx context.Context
@@ -48,28 +46,6 @@ func (client *Client) PerformRequest(method, path string, params url.Values, bod
 	return client.c.PerformRequest(client.ctx, method, path, params, body, ignoreErrors...)
 }
 
-func (client *Client) DefaultFeatureStoreExists() (bool, error) {
-	return client.FeatureStoreExists("")
-}
-
-func (client *Client) FeatureStoreExists(featureStore string) (bool, error) {
-	// Checks if the ltr feature store exists
-	method := http.MethodGet
-	path := "/_ltr"
-	if featureStore != "" {
-		path = fmt.Sprintf("%s/%s/", path, featureStore)
-	}
-
-	// Perform the request - note that a 404 indicates the feature store does not exist
-	// and is a perfectly valid response code
-	resp, err := client.PerformRequest(method, path, nil, nil, 404)
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
-		err := errors.New(fmt.Sprintf("error checking if feature store %s exists", path))
-		return false, err
-	}
-
-	exists := resp.StatusCode == http.StatusOK;
-
-	return exists, err
+func (client *Client) FeatureService() (*FeatureService) {
+	return NewFeatureService(client)
 }

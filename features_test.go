@@ -1,4 +1,4 @@
-package client
+package dp_golearn_to_rank
 
 import (
 	"testing"
@@ -11,7 +11,7 @@ func TestClient_FeatureStoreExists(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	exists, err := c.DefaultFeatureStoreExists()
+	exists, err := c.FeatureService().DefaultFeatureStoreExists()
 
 	if err != nil {
 		t.Error(err)
@@ -20,5 +20,4 @@ func TestClient_FeatureStoreExists(t *testing.T) {
 	if !exists {
 		t.Error("feature store doesn't exist")
 	}
-
 }
