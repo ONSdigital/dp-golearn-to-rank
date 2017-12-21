@@ -55,9 +55,9 @@ func (client *Client) DefaultFeatureStoreExists() (bool, error) {
 func (client *Client) FeatureStoreExists(featureStore string) (bool, error) {
 	// Checks if the ltr feature store exists
 	method := http.MethodGet
-	path := "/_ltr/"
+	path := "/_ltr"
 	if featureStore != "" {
-		path = fmt.Sprintf("/_ltr/%s/", featureStore)
+		path = fmt.Sprintf("%s/%s/", path, featureStore)
 	}
 
 	// Perform the request - note that a 404 indicates the feature store does not exist
