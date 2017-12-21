@@ -22,11 +22,15 @@ func NewFeatureService(client *Client) (*FeatureService) {
 	return &f
 }
 
-func (featureService *FeatureService) DefaultFeatureStoreExists() (bool, error) {
-	return featureService.FeatureStoreExists("")
+func (service *FeatureService) performSimpleRequest(method, path string, ignoreErrors ...int) (*elastic.Response, error) {
+	return service.client.PerformRequest(method, path, nil, nil, ignoreErrors...)
 }
 
-func (featureService *FeatureService) FeatureStoreExists(featureStore string) (bool, error) {
+func (service *FeatureService) DefaultFeatureStoreExists() (bool, error) {
+	return service.FeatureStoreExists("")
+}
+
+func (service *FeatureService) FeatureStoreExists(featureStore string) (bool, error) {
 	// Checks if the ltr feature store exists
 	method := http.MethodGet
 	path := LearnToRankApi
@@ -36,7 +40,7 @@ func (featureService *FeatureService) FeatureStoreExists(featureStore string) (b
 
 	// Perform the request - note that a 404 indicates the feature store does not exist
 	// and is a perfectly valid response code
-	resp, err := featureService.client.PerformRequest(method, path, nil, nil, 404)
+	resp, err := service.performSimpleRequest(method, path, http.StatusNotFound)
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
 		err := errors.New(fmt.Sprintf("error checking if feature store %s exists", path))
@@ -48,12 +52,21 @@ func (featureService *FeatureService) FeatureStoreExists(featureStore string) (b
 	return exists, err
 }
 
-func (featureService *FeatureService) CreateFeatureStore(featureStore string) (*elastic.Response, error) {
+func (service *FeatureService) CreateFeatureStore(featureStore string) (*elastic.Response, error) {
 	// Creates a feature store
 	method := http.MethodPut
 	path := LearnToRankApi + "/" + featureStore
 
-	resp, err := featureService.client.PerformRequest(method, path, nil, nil)
+	resp, err := service.performSimpleRequest(method, path)
+
+	return resp, err
+}
+
+func (service *FeatureService) DropFeatureStore(featureStore string) (*elastic.Response, error) {
+	method := http.MethodDelete
+	path := LearnToRankApi + "/" + featureStore
+
+	resp, err := service.performSimpleRequest(method, path)
 
 	return resp, err
 }
